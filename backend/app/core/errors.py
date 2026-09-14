@@ -77,6 +77,10 @@ async def app_error_handler(request: Request, exc: AppError):
         f"AppError [{exc.code}]: {exc.message}",
         extra={"request_id": request_id, "error_code": exc.code, "path": request.url.path}
     )
+    headers = {
+        "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+        "Access-Control-Allow-Credentials": "true",
+    }
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -86,6 +90,7 @@ async def app_error_handler(request: Request, exc: AppError):
                 "request_id": request_id,
             }
         },
+        headers=headers,
     )
 
 
@@ -95,6 +100,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
         f"Unhandled exception on {request.url.path}",
         extra={"request_id": request_id, "error_code": "INTERNAL_SERVER_ERROR"}
     )
+    headers = {
+        "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+        "Access-Control-Allow-Credentials": "true",
+    }
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -104,4 +113,5 @@ async def generic_exception_handler(request: Request, exc: Exception):
                 "request_id": request_id,
             }
         },
+        headers=headers,
     )

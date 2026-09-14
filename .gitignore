@@ -45,6 +45,7 @@ dist/
 # Operating system files
 .DS_Store
 Thumbs.db
+node_modules/
 
 # Local databases and logs
 *.db
