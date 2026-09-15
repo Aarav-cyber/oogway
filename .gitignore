@@ -52,3 +52,7 @@ node_modules/
 *.sqlite
 *.sqlite3
 *.log
+
+
+backend_README.md
+frontend_README.md
