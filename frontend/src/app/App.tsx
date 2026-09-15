@@ -6,6 +6,8 @@ import { ArtifactViewer } from '../components/artifacts/ArtifactViewer';
 import { useSessions, useSessionMessages } from '../hooks/useSessions';
 import { useChat } from '../hooks/useChat';
 import { useArtifact } from '../hooks/useArtifacts';
+import { apiClient } from '../api/client';
+import { ReadinessResponse } from '../types/api';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +21,16 @@ const queryClient = new QueryClient({
 export function MainApp() {
   const { sessions, createSession, isCreating } = useSessions();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<ReadinessResponse | null>(null);
+
+  useEffect(() => {
+    apiClient
+      .get<ReadinessResponse>('/ready')
+      .then(setReadiness)
+      .catch((err) => {
+        console.error('Failed to fetch backend readiness:', err);
+      });
+  }, []);
 
   // Auto-select first session or auto-create one if none exist
   useEffect(() => {
@@ -27,9 +39,20 @@ export function MainApp() {
     }
   }, [sessions, activeSessionId]);
 
-  const { data: messages = [], isLoading: isLoadingMessages } = useSessionMessages(activeSessionId);
-  const { sendMessage, isSending, error, lastResponseSources, activeArtifactId, setActiveArtifactId } = useChat();
-  const { data: activeArtifact, isLoading: isLoadingArtifact } = useArtifact(activeArtifactId);
+  const { data: messages = [], isLoading: isLoadingMessages } =
+    useSessionMessages(activeSessionId);
+
+  const {
+    sendMessage,
+    isSending,
+    error,
+    lastResponseSources,
+    activeArtifactId,
+    setActiveArtifactId,
+  } = useChat();
+
+  const { data: activeArtifact, isLoading: isLoadingArtifact } =
+    useArtifact(activeArtifactId);
 
   const handleNewChat = async () => {
     try {
@@ -43,12 +66,20 @@ export function MainApp() {
 
   const handleSendMessage = async (content: string) => {
     let currentSessionId = activeSessionId;
+
     if (!currentSessionId) {
-      const newSession = await createSession({ title: content.slice(0, 30) });
+      const newSession = await createSession({
+        title: content.slice(0, 30),
+      });
+
       currentSessionId = newSession.id;
       setActiveSessionId(currentSessionId);
     }
-    await sendMessage({ sessionId: currentSessionId, content });
+
+    await sendMessage({
+      sessionId: currentSessionId,
+      content,
+    });
   };
 
   return (
@@ -61,8 +92,8 @@ export function MainApp() {
       }}
       onNewChat={handleNewChat}
       isCreatingSession={isCreating}
-      activeProvider="ollama"
-      activeModel="llama3.2"
+      activeProvider={readiness?.provider || 'unknown'}
+      activeModel={readiness?.model || 'unknown'}
       hasArtifact={!!activeArtifactId || isLoadingArtifact}
       artifactComponent={
         <ArtifactViewer

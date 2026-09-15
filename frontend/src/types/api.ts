@@ -21,3 +21,11 @@ export class CustomApiError extends Error {
     this.requestId = requestId;
   }
 }
+
+export interface ReadinessResponse {
+  status: string;
+  database: string;
+  llm: string;
+  provider: string;
+  model: string;
+}

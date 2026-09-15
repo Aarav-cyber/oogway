@@ -42,7 +42,7 @@ class OllamaProvider(BaseLLMProvider):
         }
 
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=settings.OLLAMA_TIMEOUT) as client:
                 res = await client.post(f"{self.base_url}/api/chat", json=payload)
                 if res.status_code != 200:
                     raise LLMUnavailableError("ollama", f"Ollama returned HTTP {res.status_code}: {res.text}")

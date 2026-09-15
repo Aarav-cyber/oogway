@@ -37,4 +37,11 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
         "database": db_status,
         "llm": llm_status,
         "provider": settings.LLM_PROVIDER,
+        "model": (
+            settings.OLLAMA_MODEL
+            if settings.LLM_PROVIDER == "ollama"
+            else settings.GROQ_MODEL
+            if settings.LLM_PROVIDER == "groq"
+            else settings.GEMINI_MODEL
+        ),
     }
