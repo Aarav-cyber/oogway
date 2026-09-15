@@ -17,10 +17,10 @@ class Settings(BaseSettings):
     OLLAMA_TIMEOUT: float = 180.0
 
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
 
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
 
     CORS_ORIGINS: Union[str, List[str]] = [
         "http://localhost:3000",

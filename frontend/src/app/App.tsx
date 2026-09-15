@@ -6,8 +6,7 @@ import { ArtifactViewer } from '../components/artifacts/ArtifactViewer';
 import { useSessions, useSessionMessages } from '../hooks/useSessions';
 import { useChat } from '../hooks/useChat';
 import { useArtifact } from '../hooks/useArtifacts';
-import { apiClient } from '../api/client';
-import { ReadinessResponse } from '../types/api';
+import { useLLMConfig } from '../hooks/useLLMConfig';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,16 +20,8 @@ const queryClient = new QueryClient({
 export function MainApp() {
   const { sessions, createSession, isCreating } = useSessions();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [readiness, setReadiness] = useState<ReadinessResponse | null>(null);
 
-  useEffect(() => {
-    apiClient
-      .get<ReadinessResponse>('/ready')
-      .then(setReadiness)
-      .catch((err) => {
-        console.error('Failed to fetch backend readiness:', err);
-      });
-  }, []);
+  const { activeProvider, activeModel, switchProvider, isSwitching, switchError } = useLLMConfig();
 
   // Auto-select first session or auto-create one if none exist
   useEffect(() => {
@@ -45,7 +36,7 @@ export function MainApp() {
   const {
     sendMessage,
     isSending,
-    error,
+    error: chatError,
     lastResponseSources,
     activeArtifactId,
     setActiveArtifactId,
@@ -79,6 +70,7 @@ export function MainApp() {
     await sendMessage({
       sessionId: currentSessionId,
       content,
+      provider: activeProvider,
     });
   };
 
@@ -92,8 +84,10 @@ export function MainApp() {
       }}
       onNewChat={handleNewChat}
       isCreatingSession={isCreating}
-      activeProvider={readiness?.provider || 'unknown'}
-      activeModel={readiness?.model || 'unknown'}
+      activeProvider={activeProvider}
+      activeModel={activeModel}
+      onSelectProvider={switchProvider}
+      isSwitchingProvider={isSwitching}
       hasArtifact={!!activeArtifactId || isLoadingArtifact}
       artifactComponent={
         <ArtifactViewer
@@ -107,7 +101,7 @@ export function MainApp() {
         messages={messages}
         isLoadingMessages={isLoadingMessages}
         isSendingMessage={isSending}
-        error={error}
+        error={switchError || chatError}
         sourcesMap={lastResponseSources}
         onSendMessage={handleSendMessage}
         onOpenArtifact={(artId) => setActiveArtifactId(artId)}

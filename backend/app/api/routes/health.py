@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.db.session import get_db
 from app.llm.factory import LLMFactory
-from app.core.config import settings
+from app.llm.runtime import get_current_provider, get_current_model
 
 router = APIRouter()
 
@@ -21,9 +21,12 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     except Exception:
         db_status = "unavailable"
 
+    current_p = get_current_provider()
+    current_m = get_current_model(current_p)
+
     llm_status = "ok"
     try:
-        provider = LLMFactory.get_provider()
+        provider = LLMFactory.get_provider(current_p)
         is_available = await provider.check_availability()
         if not is_available:
             llm_status = "unavailable"
@@ -36,12 +39,6 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
         "status": overall,
         "database": db_status,
         "llm": llm_status,
-        "provider": settings.LLM_PROVIDER,
-        "model": (
-            settings.OLLAMA_MODEL
-            if settings.LLM_PROVIDER == "ollama"
-            else settings.GROQ_MODEL
-            if settings.LLM_PROVIDER == "groq"
-            else settings.GEMINI_MODEL
-        ),
+        "provider": current_p,
+        "model": current_m,
     }

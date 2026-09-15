@@ -12,8 +12,10 @@ interface AppLayoutProps {
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
   isCreatingSession: boolean;
-  activeProvider?: string;
-  activeModel?: string;
+  activeProvider: string;
+  activeModel: string;
+  onSelectProvider: (provider: string) => Promise<void>;
+  isSwitchingProvider?: boolean;
   hasArtifact?: boolean;
 }
 
@@ -27,6 +29,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   isCreatingSession,
   activeProvider,
   activeModel,
+  onSelectProvider,
+  isSwitchingProvider = false,
   hasArtifact = false,
 }) => {
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
@@ -39,6 +43,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         onToggleSidebar={() => setIsSidebarOpenMobile(!isSidebarOpenMobile)}
         activeProvider={activeProvider}
         activeModel={activeModel}
+        onSelectProvider={onSelectProvider}
+        isSwitchingProvider={isSwitchingProvider}
         isArtifactOpen={isArtifactOpen}
         onToggleArtifact={() => setIsArtifactOpen(!isArtifactOpen)}
         hasArtifact={hasArtifact}

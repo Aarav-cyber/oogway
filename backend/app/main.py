@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.errors import AppError, app_error_handler, generic_exception_handler
-from app.api.routes import health_router, sessions_router, chat_router, artifacts_router
+from app.api.routes import health_router, sessions_router, chat_router, artifacts_router, config_router
 
 setup_logging()
 
@@ -28,3 +28,4 @@ app.include_router(health_router)
 app.include_router(sessions_router)
 app.include_router(chat_router)
 app.include_router(artifacts_router)
+app.include_router(config_router)
